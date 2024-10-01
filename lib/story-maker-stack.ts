@@ -48,6 +48,10 @@ export class StoryMakerStack extends cdk.Stack {
 
     const userPoolClient = userPool.addClient('StoryMakerUserPoolClient', {
       generateSecret: false,
+      authFlows: {
+        userPassword: true,
+        userSrp: true,
+      },
     });
 
     // API Gateway
@@ -55,6 +59,8 @@ export class StoryMakerStack extends cdk.Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+        allowCredentials: true,
       },
     });
 
@@ -68,7 +74,11 @@ export class StoryMakerStack extends cdk.Stack {
     });
 
     lambdaRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
+
+    // Grant read and write permissions to the main table
     table.grantReadWriteData(lambdaRole);
+
+
 
     const lambdaFunction = new nodejs.NodejsFunction(this, `StoryFunction`, {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -130,7 +140,7 @@ export class StoryMakerStack extends cdk.Stack {
     });
 
     new s3deploy.BucketDeployment(this, 'DeployWebsite', {
-      sources: [s3deploy.Source.asset('frontend/build')],
+      sources: [s3deploy.Source.asset('frontend/dist')],
       destinationBucket: websiteBucket,
     });
 

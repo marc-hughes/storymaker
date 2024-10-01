@@ -9,19 +9,20 @@ interface StorySummary {
 export async function getUserStories(userId: string): Promise<StorySummary[]> {
     const params = {
         TableName: STORY_TABLE_NAME,
-        IndexName: 'UserStoriesIndex',
-        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+        KeyConditionExpression: 'PK = :pk',
         ExpressionAttributeValues: {
             ':pk': `USER#${userId}`,
-            ':sk': 'STORY#',
         },
-        ProjectionExpression: 'StoryId, Title',
+        ProjectionExpression: 'id, title',
     };
 
     const data = await ddbDocClient.send(new QueryCommand(params));
+    console.info("Retrieved user stories", {
+        data,
+    });
 
     return (data.Items || []).map(item => ({
-        id: item.StoryId,
-        title: item.Title,
+        id: item.id,
+        title: item.title,
     }));
 }

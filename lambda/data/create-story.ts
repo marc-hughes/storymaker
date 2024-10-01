@@ -1,7 +1,8 @@
 import { ddbDocClient, STORY_TABLE_NAME } from './dynamodb';
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from 'uuid';
-import { Story } from '../../frontend/story-maker';
+import { Story } from '../../frontend/src/types/story-maker';
+import { serializeStoryIndexToDynamoDB, serializeStoryToDynamoDB } from './serialize';
 
 export async function createStory(userId: string, title: string): Promise<Story> {
     const storyId = uuidv4();
@@ -13,19 +14,21 @@ export async function createStory(userId: string, title: string): Promise<Story>
 
     const params = {
         TableName: STORY_TABLE_NAME,
-        Item: {
-            PK: `USER#${userId}#STORY#${storyId}`,
-            SK: 'METADATA',
-            ItemType: 'Story',
-            StoryId: storyId,
-            Title: title,
-            CreatedAt: new Date().toISOString(),
-            UpdatedAt: new Date().toISOString(),
-        },
+        Item: serializeStoryToDynamoDB(story, userId),
         ConditionExpression: 'attribute_not_exists(PK)',
     };
 
-    await ddbDocClient.send(new PutCommand(params));
+    const params2 = {
+        TableName: STORY_TABLE_NAME,
+        Item: serializeStoryIndexToDynamoDB(story, userId),
+    };
+
+    await Promise.all([
+        ddbDocClient.send(new PutCommand(params)),
+        ddbDocClient.send(new PutCommand(params2)),
+    ]);
+
+
 
     return story;
 }

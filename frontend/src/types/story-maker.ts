@@ -86,7 +86,7 @@ export interface EndStoryAction extends BaseAction {
     type: "end_story";
 }
 
-type Action = SetFlagAction | EndStoryAction;
+export type Action = SetFlagAction | EndStoryAction;
 
 
 export interface BaseMedia {

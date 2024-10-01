@@ -24,6 +24,7 @@ async function createStoryWithNodes() {
 
     try {
         // Create a new story
+        console.info("Creating story...");
         const story = await createStory(userId, storyTitle);
         console.log("Created story:", story);
 

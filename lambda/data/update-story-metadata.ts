@@ -1,4 +1,4 @@
-import { Story } from '../../frontend/story-maker';
+import { Story } from '../../frontend/src/types/story-maker';
 import { ddbDocClient, STORY_TABLE_NAME } from './dynamodb';
 import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
 

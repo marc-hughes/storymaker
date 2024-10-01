@@ -1,29 +1,15 @@
-import { StoryNode } from '../../frontend/story-maker';
+import { StoryNode } from '../../frontend/src/types/story-maker';
 import { ddbDocClient, STORY_TABLE_NAME } from './dynamodb';
-import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { serializeNodeToDynamoDB } from './serialize';
 
-
-export async function updateNode(userId: string, storyId: string, nodeId: string, updates: Partial<StoryNode>): Promise<void> {
-    const updateExpressions = [];
-    const expressionAttributeNames: Record<string, string> = {};
-    const expressionAttributeValues: Record<string, any> = {};
-
-    for (const [key, value] of Object.entries(updates)) {
-        updateExpressions.push(`#${key} = :${key}`);
-        expressionAttributeNames[`#${key}`] = key;
-        expressionAttributeValues[`:${key}`] = value;
-    }
+export async function updateNode(userId: string, storyId: string, nodeId: string, updates: StoryNode): Promise<void> {
+    const serializedNode = serializeNodeToDynamoDB(updates, userId, storyId);
 
     const params = {
         TableName: STORY_TABLE_NAME,
-        Key: {
-            PK: `USER#${userId}#STORY#${storyId}`,
-            SK: `NODE#${nodeId}`,
-        },
-        UpdateExpression: `SET ${updateExpressions.join(', ')}`,
-        ExpressionAttributeNames: expressionAttributeNames,
-        ExpressionAttributeValues: expressionAttributeValues,
+        Item: serializedNode,
     };
 
-    await ddbDocClient.send(new UpdateCommand(params));
+    await ddbDocClient.send(new PutCommand(params));
 }

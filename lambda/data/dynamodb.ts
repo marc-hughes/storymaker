@@ -29,6 +29,9 @@ export const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 export const STORY_TABLE_NAME = process.env.STORY_TABLE_NAME;
 
+// console.info("STORY_TABLE_NAME", STORY_TABLE_NAME);
+// console.info("process.env", process.env.AWS_ACCESS_KEY_ID);
+
 if (!STORY_TABLE_NAME) {
     throw new Error("STORY_TABLE_NAME environment variable is not set");
 }
