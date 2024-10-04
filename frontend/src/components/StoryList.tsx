@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { getStories, createStory, deleteStory } from "../services/api";
-import { Story } from "../types/story-maker";
+import React, { useState } from "react";
 import {
   Button,
   List,
@@ -13,45 +11,55 @@ import {
   FormControl,
   FormLabel,
   Input,
+  Snackbar,
 } from "@mui/joy";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+
+import {
+  useCreateStory,
+  useDeleteStory,
+  useGetStories,
+} from "../services/useStoryQueries";
 
 const StoryList: React.FC = () => {
-  const [stories, setStories] = useState<Story[]>([]);
+  //const [stories, setStories] = useState<Story[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
-  const { getAccessToken } = useAuth();
   const navigate = useNavigate();
-  const token = getAccessToken() || "";
-
-  const fetchStories = async () => {
-    const data = await getStories(token);
-    setStories(data);
-  };
-
-  useEffect(() => {
-    fetchStories();
-  }, []);
+  const { isPending, error, data: stories } = useGetStories();
+  const createStoryMutation = useCreateStory();
+  const deleteStoryMutation = useDeleteStory();
 
   const handleCreate = async () => {
-    const newStory = await createStory(token, title);
-    setStories([...stories, newStory]);
+    await createStoryMutation.mutateAsync({ title });
+    //setStories([...stories, newStory]);
     setOpen(false);
     setTitle("");
   };
 
   const handleDelete = async (id: string) => {
-    await deleteStory(token, id);
-    setStories(stories.filter((story) => story.id !== id));
+    deleteStoryMutation.mutate({ id });
   };
+
+  if (isPending) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
       <Typography level="h4">My Stories</Typography>
+
+      <Snackbar
+        open={createStoryMutation.isSuccess}
+        autoHideDuration={3000}
+        onClose={() => createStoryMutation.reset()}
+      >
+        Story Created
+      </Snackbar>
+
       <Button onClick={() => setOpen(true)} sx={{ mb: 2 }}>
         Create New Story
       </Button>
+
       <List>
         {stories.map((story) => (
           <ListItem

@@ -28,7 +28,7 @@ interface User {
   idToken: string;
 }
 
-const AuthContext = createContext<AuthContextProps>({
+export const AuthContext = createContext<AuthContextProps>({
   isAuthenticated: false,
   user: null,
   confirmSignup: async () => {},

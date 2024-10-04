@@ -23,7 +23,17 @@ import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 //     "OtherNodeAttributes": "..."
 // }
 
-const client = new DynamoDBClient({});
+
+const clientConfig: any = {};
+
+if (process.env.LAMBDA_AWS_ACCESS_KEY_ID && process.env.LAMBDA_AWS_SECRET_ACCESS_KEY) {
+    clientConfig.credentials = {
+        accessKeyId: process.env.LAMBDA_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.LAMBDA_AWS_SECRET_ACCESS_KEY,
+    };
+}
+
+const client = new DynamoDBClient(clientConfig);
 export const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 

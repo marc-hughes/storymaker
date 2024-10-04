@@ -1,8 +1,9 @@
 import React from "react";
-import { Typography, Button } from "@mui/joy";
+import { Typography, Button, CssBaseline } from "@mui/joy";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
+import GlobalStyles from "../GlobalStyles";
 
 const Header = styled.header`
   display: flex;
@@ -40,6 +41,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <>
+      {/* <GlobalStyles /> */}
+      <CssBaseline />
       <Header>
         <Typography component="h1" fontSize="xl" fontWeight="lg">
           Story Maker
