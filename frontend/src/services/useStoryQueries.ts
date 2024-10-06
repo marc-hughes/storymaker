@@ -2,47 +2,81 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '../services/api';
 import { Story, StoryNode } from '../types/story-maker';
 import { useAuth } from '../context/AuthContext';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import { API_URL } from '../constants';
+
+interface RetryableRequest extends InternalAxiosRequestConfig {
+    _retry?: boolean;
+}
 
 
-
-// Assuming you have a way to get the token, e.g., from a context or state
-const useToken = () => {
+const useApiClient = (): AxiosInstance => {
     const auth = useAuth();
-    return auth.user?.idToken;
+    const apiClient = axios.create({
+        baseURL: API_URL,
+    });
+
+    apiClient.interceptors.request.use(
+        async (config) => {
+            const token = auth.getAccessToken();
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+            return config;
+        },
+        (error) => Promise.reject(error)
+    );
+
+    apiClient.interceptors.response.use(
+        (response) => response,
+        async (error: AxiosError) => {
+            const originalRequest = error.config as RetryableRequest;
+            if (originalRequest && error.response?.status === 401 && !originalRequest._retry) {
+                originalRequest._retry = true;
+                try {
+                    const newToken = await auth.refreshToken();
+                    if (newToken && originalRequest.headers) {
+                        originalRequest.headers['Authorization'] = `Bearer ${newToken.idToken}`;
+                    }
+                    return apiClient(originalRequest);
+                } catch (refreshError) {
+                    // Handle refresh error (e.g., redirect to login)
+                    return Promise.reject(refreshError);
+                }
+            }
+            return Promise.reject(error);
+        }
+    );
+
+    return apiClient;
 };
 
 export const useGetStories = () => {
-    const token = useToken();
+    const client = useApiClient();
     return useQuery<Story[], Error>({
         queryKey: ['stories'],
         queryFn: () => {
-            if (!token) throw new Error('No authentication token available');
-            return api.getStories(token);
+            if (!client) throw new Error('No authentication token available');
+            return api.getStories(client);
         },
-        enabled: !!token,
+        enabled: !!client,
     });
 };
 
 export const useGetStory = (id: string) => {
-    const token = useToken();
+    const client = useApiClient();
     return useQuery<Story, Error>({
         queryKey: ['story', id],
-        queryFn: () => {
-            if (!token) throw new Error('No authentication token available');
-            return api.getStory(token, id);
-        },
-        enabled: !!token,
+        queryFn: () => api.getStory(client, id),
+        enabled: !!client,
     });
 };
 
 export const useCreateStory = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<Story, Error, { title: string }>({
-        mutationFn: ({ title }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.createStory(token, title);
-        },
+        mutationFn: ({ title }) => api.createStory(client, title),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stories'] });
         },
@@ -51,12 +85,9 @@ export const useCreateStory = () => {
 
 export const useUpdateStory = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<Story, Error, { id: string; title: string }>({
-        mutationFn: ({ id, title }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.updateStory(token, id, title);
-        },
+        mutationFn: ({ id, title }) => api.updateStory(client, id, title),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['stories'] });
             queryClient.invalidateQueries({ queryKey: ['story', data.id] });
@@ -66,12 +97,9 @@ export const useUpdateStory = () => {
 
 export const useDeleteStory = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<void, Error, { id: string }>({
-        mutationFn: ({ id }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.deleteStory(token, id);
-        },
+        mutationFn: ({ id }) => api.deleteStory(client, id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['stories'] });
         },
@@ -80,12 +108,9 @@ export const useDeleteStory = () => {
 
 export const useCreateNode = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<StoryNode, Error, { storyId: string; node: Partial<StoryNode> }>({
-        mutationFn: ({ storyId, node }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.createNode(token, storyId, node);
-        },
+        mutationFn: ({ storyId, node }) => api.createNode(client, storyId, node),
         onSuccess: (data, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });
         },
@@ -94,12 +119,9 @@ export const useCreateNode = () => {
 
 export const useUpdateNode = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<StoryNode, Error, { storyId: string; nodeId: string; node: Partial<StoryNode> }>({
-        mutationFn: ({ storyId, nodeId, node }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.updateNode(token, storyId, nodeId, node);
-        },
+        mutationFn: ({ storyId, nodeId, node }) => api.updateNode(client, storyId, nodeId, node),
         onSuccess: (data, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });
         },
@@ -108,12 +130,9 @@ export const useUpdateNode = () => {
 
 export const useDeleteNode = () => {
     const queryClient = useQueryClient();
-    const token = useToken();
+    const client = useApiClient();
     return useMutation<void, Error, { storyId: string; nodeId: string }>({
-        mutationFn: ({ storyId, nodeId }) => {
-            if (!token) throw new Error('No authentication token available');
-            return api.deleteNode(token, storyId, nodeId);
-        },
+        mutationFn: ({ storyId, nodeId }) => api.deleteNode(client, storyId, nodeId),
         onSuccess: (_, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });
         },

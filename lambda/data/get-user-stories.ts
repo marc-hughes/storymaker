@@ -17,9 +17,9 @@ export async function getUserStories(userId: string): Promise<StorySummary[]> {
     };
 
     const data = await ddbDocClient.send(new QueryCommand(params));
-    console.info("Retrieved user stories", {
-        data,
-    });
+    // console.info("Retrieved user stories", {
+    //     data,
+    // });
 
     return (data.Items || []).map(item => ({
         id: item.id,

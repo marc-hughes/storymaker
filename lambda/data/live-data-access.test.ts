@@ -9,25 +9,26 @@ import { deleteNode } from './delete-node';
 import { getNode } from './get-node';
 import { checkUserOwnership } from './check-user-ownership';
 import { getUserStories } from './get-user-stories';
+import { deleteStory, undeleteStory } from './delete-story';
 
 const TEST_USER_ID = 'test-user-123';
-const TEST_TIMEOUT = 30000; // 30 seconds in milliseconds
+const TEST_TIMEOUT = 45000; // 45 seconds in milliseconds
 
 describe('Story Creation and Retrieval', () => {
     let createdStoryId: string;
 
     afterAll(async () => {
         // Clean up the created story after all tests
-        // if (createdStoryId) {
-        //     const deleteParams = {
-        //         TableName: STORY_TABLE_NAME,
-        //         Key: {
-        //             PK: `USER#${TEST_USER_ID}#STORY#${createdStoryId}`,
-        //             SK: 'METADATA'
-        //         }
-        //     };
-        //     await ddbDocClient.send(new DeleteCommand(deleteParams));
-        // }
+        if (createdStoryId) {
+            const deleteParams = {
+                TableName: STORY_TABLE_NAME,
+                Key: {
+                    PK: `USER#${TEST_USER_ID}#STORY#${createdStoryId}`,
+                    SK: 'METADATA'
+                }
+            };
+            await ddbDocClient.send(new DeleteCommand(deleteParams));
+        }
     });
 
     it('should create a story, add nodes, update a node, and then retrieve it', async () => {
@@ -107,7 +108,7 @@ describe('Story Creation and Retrieval', () => {
         // Retrieve the updated story
         const retrievedStoryData = await getStory(TEST_USER_ID, createdStoryId);
 
-        console.info(JSON.stringify(retrievedStoryData))
+        //console.info(JSON.stringify(retrievedStoryData))
 
         expect(retrievedStoryData).toBeDefined();
         expect(retrievedStoryData.story).toBeDefined();
@@ -140,6 +141,28 @@ describe('Story Creation and Retrieval', () => {
         expect(storyAfterDeletion.story.nodes).toHaveLength(1);
         expect(storyAfterDeletion.story.nodes.find(node => node.id === createdNode2.id)).toBeUndefined();
 
+        // Add tests for deleting and undeleting a story
+        // Delete the story
+        await deleteStory(TEST_USER_ID, createdStoryId);
+
+        // Verify the story is marked as deleted
+        const deletedStoryData = await getStory(TEST_USER_ID, createdStoryId);
+        expect(deletedStoryData.story.deleted).toBe(true);
+
+        // Verify the story doesn't appear in the user's stories list
+        const userStoriesAfterDeletion = await getUserStories(TEST_USER_ID);
+        expect(userStoriesAfterDeletion.find(story => story.id === createdStoryId)).toBeUndefined();
+
+        // Undelete the story
+        await undeleteStory(TEST_USER_ID, createdStoryId);
+
+        // Verify the story is no longer marked as deleted
+        const undeletedStoryData = await getStory(TEST_USER_ID, createdStoryId);
+        expect(undeletedStoryData.story.deleted).toBe(false);
+
+        // Verify the story reappears in the user's stories list
+        const userStoriesAfterUndeletion = await getUserStories(TEST_USER_ID);
+        expect(userStoriesAfterUndeletion.find(story => story.id === createdStoryId)).toBeDefined();
 
         const weOwn = await checkUserOwnership(TEST_USER_ID, createdStoryId);
         expect(weOwn).toBe(true);
@@ -149,7 +172,6 @@ describe('Story Creation and Retrieval', () => {
 
         const userStories = await getUserStories(TEST_USER_ID);
         expect(userStories.find(story => story.id === createdStoryId)).toBeDefined();
-
 
     }, TEST_TIMEOUT);  // Add timeout here
 

@@ -2,6 +2,9 @@ export interface Story {
     id: string;
     title: string;
     nodes: StoryNode[];
+    deleted: boolean;
+    CreatedAt?: string;
+    UpdatedAt?: string;
 }
 
 export interface StoryNode {
@@ -12,6 +15,8 @@ export interface StoryNode {
     prompt: ConditionalPrompts[];
     responses: Response[];
     media: Media[];
+    CreatedAt?: string;
+    UpdatedAt?: string;
 }
 
 export interface ConditionalPrompts {

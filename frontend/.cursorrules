@@ -1,0 +1,7 @@
+Use @tanstack/react-query for API requests
+Use @emotion/styled for component styling
+Prefer small functions
+Prefer fat arrow syntax for functions
+When writing comments, make sure to write "WHY" we're doing things, the what/how is less important.
+Look in types/story-maker.ts for core data types.
+Don't apologize on mistakes

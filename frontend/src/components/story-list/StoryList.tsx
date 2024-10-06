@@ -1,8 +1,7 @@
 import React, { useState } from "react";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import {
   Button,
-  List,
-  ListItem,
   Typography,
   Modal,
   ModalDialog,
@@ -13,23 +12,17 @@ import {
   Input,
   Snackbar,
 } from "@mui/joy";
-import { useNavigate } from "react-router-dom";
 
-import {
-  useCreateStory,
-  useDeleteStory,
-  useGetStories,
-} from "../services/useStoryQueries";
+import { useCreateStory, useGetStories } from "../../services/useStoryQueries";
+import { StoryTable } from "./StoryTable";
 
 const StoryList: React.FC = () => {
   //const [stories, setStories] = useState<Story[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
-  const navigate = useNavigate();
+
   const { isPending, error, data: stories } = useGetStories();
   const createStoryMutation = useCreateStory();
-  const deleteStoryMutation = useDeleteStory();
-
   const handleCreate = async () => {
     await createStoryMutation.mutateAsync({ title });
     //setStories([...stories, newStory]);
@@ -37,17 +30,31 @@ const StoryList: React.FC = () => {
     setTitle("");
   };
 
-  const handleDelete = async (id: string) => {
-    deleteStoryMutation.mutate({ id });
-  };
-
   if (isPending) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
-      <Typography level="h4">My Stories</Typography>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography level="h4">My Stories</Typography>
 
+        <Button
+          variant="solid"
+          color="success"
+          onClick={() => setOpen(true)}
+          sx={{ mb: 2 }}
+        >
+          <AddRoundedIcon />
+          New Story
+        </Button>
+      </Stack>
       <Snackbar
         open={createStoryMutation.isSuccess}
         autoHideDuration={3000}
@@ -56,29 +63,8 @@ const StoryList: React.FC = () => {
         Story Created
       </Snackbar>
 
-      <Button onClick={() => setOpen(true)} sx={{ mb: 2 }}>
-        Create New Story
-      </Button>
+      <StoryTable stories={stories} />
 
-      <List>
-        {stories.map((story) => (
-          <ListItem
-            key={story.id}
-            endAction={
-              <Button color="danger" onClick={() => handleDelete(story.id)}>
-                Delete
-              </Button>
-            }
-          >
-            <Button
-              variant="plain"
-              onClick={() => navigate(`/stories/${story.id}`)}
-            >
-              {story.title}
-            </Button>
-          </ListItem>
-        ))}
-      </List>
       <Modal open={open} onClose={() => setOpen(false)}>
         <ModalDialog>
           <ModalClose />

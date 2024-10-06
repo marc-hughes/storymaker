@@ -10,6 +10,7 @@ export async function createStory(userId: string, title: string): Promise<Story>
         id: storyId,
         title,
         nodes: [],
+        deleted: false,
     };
 
     const params = {

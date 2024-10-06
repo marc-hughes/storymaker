@@ -19,9 +19,11 @@ interface AuthContextProps {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   getAccessToken: () => string | null;
+  refreshToken: () => Promise<User | null>;
 }
 
 interface User {
+  name: string;
   email: string;
   accessToken: string;
   refreshToken: string;
@@ -36,13 +38,18 @@ export const AuthContext = createContext<AuthContextProps>({
   login: async () => {},
   logout: () => {},
   getAccessToken: () => null,
+  refreshToken: async () => null,
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
+  const savedUser = localStorage.getItem("user");
+  const hasSavedUser = savedUser !== null;
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(hasSavedUser);
+  const [user, setUser] = useState<User | null>(
+    JSON.parse(savedUser || "null")
+  );
 
   const signup = async (email: string, password: string) => {
     const command = new SignUpCommand({
@@ -75,11 +82,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       },
     });
 
-    const response: AuthenticationResultType = (await client.send(command))
-      .AuthenticationResult as AuthenticationResultType;
+    const authResponse = await client.send(command);
+    const response: AuthenticationResultType =
+      authResponse.AuthenticationResult as AuthenticationResultType;
 
     if (response?.AccessToken && response?.RefreshToken && response?.IdToken) {
+      //response.
       const newUser: User = {
+        name: "",
         email,
         accessToken: response.AccessToken,
         refreshToken: response.RefreshToken,
@@ -101,14 +111,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return user?.idToken || null;
   };
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser: User = JSON.parse(storedUser);
-      setIsAuthenticated(true);
-      setUser(parsedUser);
+  const refreshToken = async (): Promise<User | null> => {
+    if (!user?.refreshToken) {
+      throw new Error("No refresh token available");
     }
-  }, []);
+
+    const command = new InitiateAuthCommand({
+      AuthFlow: "REFRESH_TOKEN_AUTH",
+      ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
+      AuthParameters: {
+        REFRESH_TOKEN: user.refreshToken,
+      },
+    });
+
+    try {
+      const response = await client.send(command);
+      if (
+        response.AuthenticationResult?.AccessToken &&
+        response.AuthenticationResult?.IdToken
+      ) {
+        const updatedUser: User = {
+          ...user,
+          accessToken: response.AuthenticationResult.AccessToken,
+          idToken: response.AuthenticationResult.IdToken,
+        };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        return updatedUser;
+      } else {
+        throw new Error("Failed to refresh token");
+      }
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      logout(); // Force logout if refresh fails
+      throw error;
+    }
+  };
 
   return (
     <AuthContext.Provider
@@ -120,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         logout,
         confirmSignup,
         getAccessToken,
+        refreshToken,
       }}
     >
       {children}

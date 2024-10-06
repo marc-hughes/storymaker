@@ -64,6 +64,19 @@ export class StoryMakerStack extends cdk.Stack {
       },
     });
 
+    // Add a GatewayResponse for UNAUTHORIZED errors
+    api.addGatewayResponse('UnauthorizedResponse', {
+      type: apigateway.ResponseType.UNAUTHORIZED,
+      responseHeaders: {
+        'Access-Control-Allow-Origin': "'*'",
+        'Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        'Access-Control-Allow-Methods': "'GET,POST,PUT,DELETE,OPTIONS'",
+      },
+      templates: {
+        'application/json': '{"message":$context.error.messageString}',
+      },
+    });
+
     // Cognito Authorizer
     const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'StoryMakerAuthorizer', {
       cognitoUserPools: [userPool],
@@ -77,8 +90,6 @@ export class StoryMakerStack extends cdk.Stack {
 
     // Grant read and write permissions to the main table
     table.grantReadWriteData(lambdaRole);
-
-
 
     const lambdaFunction = new nodejs.NodejsFunction(this, `StoryFunction`, {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -117,6 +128,13 @@ export class StoryMakerStack extends cdk.Stack {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });
+
+    // DELETE /stories/{id} (remove story)
+    story.addMethod('DELETE', new apigateway.LambdaIntegration(lambdaFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
 
     // POST /stories/{id}/nodes (createNode)
     const nodes = story.addResource('nodes');
