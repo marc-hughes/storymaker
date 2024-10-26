@@ -11,6 +11,7 @@ const createCorsResponse = (statusCode: number, body: any): APIGatewayProxyResul
     return {
         statusCode,
         headers: {
+            'X-Story-Maker-Version': '0.0.1',
             'Access-Control-Allow-Origin': '*', // Allow all origins
             'Access-Control-Allow-Credentials': true,
             'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
@@ -71,6 +72,7 @@ const handleGetStories = async (userId: string): Promise<APIGatewayProxyResult> 
     const stories = await getUserStories(userId);
     return createCorsResponse(200, stories);
 };
+
 
 const handleGetStory = async (event: APIGatewayProxyEvent, userId: string, storyId: string): Promise<APIGatewayProxyResult> => {
     try {
