@@ -41,7 +41,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 return await handleGetStories(userId);
             case httpMethod === 'GET' && pathParts[0] === 'stories' && pathParts.length === 2:
                 return await handleGetStory(event, userId, pathParts[1]);
-            case httpMethod === 'PUT' && pathParts[0] === 'stories' && pathParts.length === 2:
+            case httpMethod === 'PATCH' && pathParts[0] === 'stories' && pathParts.length === 2:
                 return await handleUpdateStory(event, userId, pathParts[1]);
             case httpMethod === 'DELETE' && pathParts[0] === 'stories' && pathParts.length === 2:
                 return await handleDeleteStory(event, userId, pathParts[1]);

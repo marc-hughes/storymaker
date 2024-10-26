@@ -22,7 +22,7 @@ export function serializeStoryToDynamoDB(story: Story, userId: string): Record<s
         ItemType: 'Story',
         id: story.id,
         title: story.title,
-        CreatedAt: story.CreatedAt || now, // Use existing createdAt or set new one
+        CreatedAt: story.createdAt || now, // Use existing createdAt or set new one
         UpdatedAt: now,
         deleted: story.deleted || false,
     };
@@ -34,8 +34,8 @@ export function deserializeStoryFromDynamoDB(item: Record<string, any>): Story {
         title: item.title,
         nodes: [],
         deleted: item.deleted || false,
-        CreatedAt: item.CreatedAt,
-        UpdatedAt: item.UpdatedAt,
+        createdAt: item.CreatedAt,
+        updatedAt: item.UpdatedAt,
     };
 }
 
@@ -46,7 +46,7 @@ export function serializeNodeToDynamoDB(node: StoryNode, userId: string, storyId
         PK: `USER#${userId}#STORY#${storyId}`,
         SK: `NODE#${node.id}`,
         ...node,
-        CreatedAt: node.CreatedAt || now, // Use existing createdAt or set new one
+        CreatedAt: node.createdAt || now, // Use existing createdAt or set new one
         UpdatedAt: now,
     };
 }

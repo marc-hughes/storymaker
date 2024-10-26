@@ -65,6 +65,7 @@ export const useGetStories = () => {
 
 export const useGetStory = (id: string) => {
     const client = useApiClient();
+    console.info("useGetStory", id);
     return useQuery<Story, Error>({
         queryKey: ['story', id],
         queryFn: () => api.getStory(client, id),
@@ -88,9 +89,13 @@ export const useUpdateStory = () => {
     const client = useApiClient();
     return useMutation<Story, Error, { id: string; title: string }>({
         mutationFn: ({ id, title }) => api.updateStory(client, id, title),
-        onSuccess: (data) => {
+        onSuccess: (msg, updatedStory) => {
+            console.info("Successfully updated story", updatedStory);
+            // Invalidate the specific story query
+            // Update the specific story in the cache with the new data            
+            queryClient.invalidateQueries({ queryKey: ['story', updatedStory.id] });
+            // Optionally, update the stories list if needed
             queryClient.invalidateQueries({ queryKey: ['stories'] });
-            queryClient.invalidateQueries({ queryKey: ['story', data.id] });
         },
     });
 };

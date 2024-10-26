@@ -4,6 +4,8 @@ import { QueryCommand } from "@aws-sdk/lib-dynamodb";
 interface StorySummary {
     id: string;
     title: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export async function getUserStories(userId: string): Promise<StorySummary[]> {
@@ -24,5 +26,7 @@ export async function getUserStories(userId: string): Promise<StorySummary[]> {
     return (data.Items || []).map(item => ({
         id: item.id,
         title: item.title,
+        createdAt: item.CreatedAt,
+        updatedAt: item.UpdatedAt,
     }));
 }
