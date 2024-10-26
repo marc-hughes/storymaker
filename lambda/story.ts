@@ -4,7 +4,8 @@ import { getUserStories } from './data/get-user-stories';
 import { deleteStory } from './data/delete-story';
 import { getStory } from './data/get-story';
 import { updateStoryMetadata } from './data/update-story-metadata';
-import { Story } from '../frontend/src/types/story-maker';
+import { Story, StoryNode } from '../frontend/src/types/story-maker';
+import { createNode } from './data/create-node';
 
 // Add this function to create a response with CORS headers
 const createCorsResponse = (statusCode: number, body: any): APIGatewayProxyResult => {
@@ -22,8 +23,16 @@ const createCorsResponse = (statusCode: number, body: any): APIGatewayProxyResul
 };
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    console.log('Received event:', JSON.stringify(event, null, 2));
+    console.log('User ID:', event.requestContext.authorizer?.claims['sub']);
+    console.log('HTTP Method:', event.httpMethod);
+    console.log('Path:', event.path);
+    console.log('Query String Parameters:', event.queryStringParameters);
+    console.log('Headers:', event.headers);
+    console.log('Body:', event.body);
     // Check if the user is authenticated
     if (!event.requestContext.authorizer) {
+        console.log('Unauthorized');
         return createCorsResponse(401, { message: 'Unauthorized' });
     }
 
@@ -45,8 +54,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 return await handleUpdateStory(event, userId, pathParts[1]);
             case httpMethod === 'DELETE' && pathParts[0] === 'stories' && pathParts.length === 2:
                 return await handleDeleteStory(event, userId, pathParts[1]);
+            case httpMethod === 'POST' && pathParts[0] === 'stories' && pathParts[2] === 'nodes' && pathParts.length === 3:
+                return await handleCreateNode(event, userId, pathParts[1]);
 
             default:
+                console.log('Path not found in lambda', httpMethod, path);
                 return createCorsResponse(404, { message: 'Not found' });
         }
     } catch (error) {
@@ -121,5 +133,23 @@ const handleDeleteStory = async (event: APIGatewayProxyEvent, userId: string, st
         }
         console.error('Error deleting story:', error);
         return createCorsResponse(500, { message: 'Failed to delete story' });
+    }
+};
+
+const handleCreateNode = async (event: APIGatewayProxyEvent, userId: string, storyId: string): Promise<APIGatewayProxyResult> => {
+    try {
+        const body = JSON.parse(event.body || '{}') as Omit<StoryNode, 'id' | 'storyId'>;
+
+
+        if (!event.body || !body) {
+            return createCorsResponse(400, { message: 'Content is required' });
+        }
+
+
+        const newNode = await createNode(userId, storyId, body);
+        return createCorsResponse(201, newNode);
+    } catch (error) {
+        console.error('Error creating node:', error);
+        return createCorsResponse(500, { message: 'Failed to create node' });
     }
 };

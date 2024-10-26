@@ -1,5 +1,8 @@
 import * as React from "react";
-import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import MapIcon from "@mui/icons-material/Map";
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import { useParams, useLocation, Link } from "react-router-dom";
+
 import DisplaySettingsIcon from "@mui/icons-material/DisplaySettings";
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import Avatar from "@mui/joy/Avatar";
@@ -15,7 +18,7 @@ import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ViewListIcon from "@mui/icons-material/ViewList";
+
 import SupportRoundedIcon from "@mui/icons-material/SupportRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
@@ -35,7 +38,7 @@ export const Sidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         element={<StoryListSidebar onLogout={onLogout} />}
       />
       <Route
-        path="/stories/:id"
+        path="/stories/:id/*"
         element={<StorySidebar onLogout={onLogout} />}
       />
     </Routes>
@@ -43,6 +46,9 @@ export const Sidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 };
 
 const StorySidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+  const { id: storyId } = useParams<{ id: string }>();
+  const location = useLocation();
+
   return (
     <CommonSidebar onLogout={onLogout}>
       <Input
@@ -71,7 +77,11 @@ const StorySidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           }}
         >
           <ListItem>
-            <ListItemButton>
+            <ListItemButton
+              selected={location.pathname === `/stories/${storyId}`}
+              component={Link}
+              to={`/stories/${storyId}`}
+            >
               <DisplaySettingsIcon />
               <ListItemContent>
                 <Typography level="title-sm">Story Details</Typography>
@@ -80,103 +90,30 @@ const StorySidebar: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           </ListItem>
 
           <ListItem>
-            <ListItemButton>
-              <AccountTreeIcon />
+            <ListItemButton
+              selected={location.pathname === `/stories/${storyId}/map`}
+              component={Link}
+              to={`/stories/${storyId}/map`}
+            >
+              <MapIcon />
               <ListItemContent>
-                <Typography level="title-sm">Nodes Map</Typography>
+                <Typography level="title-sm">Node Map</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
 
           <ListItem>
-            <ListItemButton>
-              <ViewListIcon />
+            <ListItemButton
+              selected={location.pathname === `/stories/${storyId}/nodes`}
+              component={Link}
+              to={`/stories/${storyId}/nodes`}
+            >
+              <ListAltIcon />
               <ListItemContent>
                 <Typography level="title-sm">Nodes List</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
-
-          {/* <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <AssignmentRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Tasks</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open
-                        ? {
-                            transform: "rotate(180deg)",
-                          }
-                        : {
-                            transform: "none",
-                          },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5 }}>
-                  <ListItemButton>All tasks</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Backlog</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>In progress</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Done</ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem> */}
-
-          {/* <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <GroupRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Users</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open
-                        ? {
-                            transform: "rotate(180deg)",
-                          }
-                        : {
-                            transform: "none",
-                          },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5 }}>
-                  <ListItemButton
-                    role="menuitem"
-                    component="a"
-                    href="/joy-ui/getting-started/templates/profile-dashboard/"
-                  >
-                    My profile
-                  </ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Create a new user</ListItemButton>
-                </ListItem>
-                <ListItem>
-                  <ListItemButton>Roles & permission</ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem> */}
         </List>
         <List
           size="sm"

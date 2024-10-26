@@ -67,9 +67,9 @@ export interface OrCondition {
     conditions: Condition[];
 }
 
-type Flag = BooleanFlag | NumberFlag | SelectFlag | AndCondition | OrCondition;
+export type Flag = BooleanFlag | NumberFlag | SelectFlag | AndCondition | OrCondition;
 
-type ConditionType = "equals" | "not_equals" | "greater_than" | "less_than" | "greater_than_or_equal_to" | "less_than_or_equal_to";
+export type ConditionType = "equals" | "not_equals" | "greater_than" | "less_than" | "greater_than_or_equal_to" | "less_than_or_equal_to";
 
 export interface Condition {
     flag: Flag;
@@ -132,4 +132,4 @@ export interface PluginMedia extends BaseMedia {
     pluginId: string;
 }
 
-type Media = ImageMedia | VideoMedia | AudioMedia | PluginMedia;
+export type Media = ImageMedia | VideoMedia | AudioMedia | PluginMedia;

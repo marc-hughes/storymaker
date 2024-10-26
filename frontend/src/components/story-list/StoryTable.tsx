@@ -1,17 +1,9 @@
-import {
-  Avatar,
-  Box,
-  Checkbox,
-  Link,
-  Sheet,
-  Table,
-  Typography,
-} from "@mui/joy";
+import { Box, Table, Typography } from "@mui/joy";
 import { Story } from "../../types/story-maker";
 import { NavLink } from "react-router-dom";
 import { styled } from "@mui/joy/styles";
 
-const StyledLink = styled(NavLink)(({ theme }) => ({
+const StyledLink = styled(NavLink)(() => ({
   textDecoration: "none",
   "&:hover": {
     textDecoration: "underline",
@@ -97,7 +89,7 @@ export const StoryTable: React.FC<{ stories: Story[] }> = ({ stories }) => {
               <Typography level="body-xs">{row.updatedAt}</Typography>
             </td>
             <td>
-              <Typography level="body-xs">{row.CreatedAt}</Typography>
+              <Typography level="body-xs">{row.createdAt}</Typography>
             </td>
             <td>
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>

@@ -3,6 +3,7 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { v4 as uuidv4 } from 'uuid';
 import { StoryNode } from '../../frontend/src/types/story-maker';
 import { serializeNodeToDynamoDB } from './serialize';
+import { StoryNodeSchema, validateStoryNode } from './validate';
 
 export async function createNode(userId: string, storyId: string, nodeData: Omit<StoryNode, 'id' | 'storyId'>): Promise<StoryNode> {
     const nodeId = uuidv4();
@@ -12,7 +13,10 @@ export async function createNode(userId: string, storyId: string, nodeData: Omit
         storyId,
     };
 
-    const serializedNode = serializeNodeToDynamoDB(node, userId, storyId);
+    // Validate the node data using the StoryNodeSchema
+    const validatedNode = validateStoryNode(node);
+
+    const serializedNode = serializeNodeToDynamoDB(validatedNode, userId, storyId);
 
     const params = {
         TableName: STORY_TABLE_NAME,

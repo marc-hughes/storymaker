@@ -20,7 +20,9 @@ const genRoute = (isAuthenticated: boolean) => (route: RouteConfig) => {
       key={route.path}
       path={route.path}
       element={needsAuth ? <Navigate to="/login" /> : route.body()}
-    />
+    >
+      {route.children?.map(genRoute(isAuthenticated))}
+    </Route>
   );
 };
 

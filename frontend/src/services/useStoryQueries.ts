@@ -89,7 +89,7 @@ export const useUpdateStory = () => {
     const client = useApiClient();
     return useMutation<Story, Error, { id: string; title: string }>({
         mutationFn: ({ id, title }) => api.updateStory(client, id, title),
-        onSuccess: (msg, updatedStory) => {
+        onSuccess: (_msg, updatedStory) => {
             console.info("Successfully updated story", updatedStory);
             // Invalidate the specific story query
             // Update the specific story in the cache with the new data            
@@ -116,7 +116,7 @@ export const useCreateNode = () => {
     const client = useApiClient();
     return useMutation<StoryNode, Error, { storyId: string; node: Partial<StoryNode> }>({
         mutationFn: ({ storyId, node }) => api.createNode(client, storyId, node),
-        onSuccess: (data, { storyId }) => {
+        onSuccess: (_data, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });
         },
     });
@@ -127,7 +127,7 @@ export const useUpdateNode = () => {
     const client = useApiClient();
     return useMutation<StoryNode, Error, { storyId: string; nodeId: string; node: Partial<StoryNode> }>({
         mutationFn: ({ storyId, nodeId, node }) => api.updateNode(client, storyId, nodeId, node),
-        onSuccess: (data, { storyId }) => {
+        onSuccess: (_data, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });
         },
     });
