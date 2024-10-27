@@ -20,6 +20,7 @@ import {
   ConditionalPrompts,
   Response,
 } from "../../types/story-maker";
+import { useWorkingCopy } from "./useWorkingCopy";
 // import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const FormContainer = styled("div")(({ theme }) => ({
@@ -30,17 +31,14 @@ const NodeEditor: React.FC = () => {
   const { id: storyId, nodeId } = useParams<{ id: string; nodeId: string }>();
   const { data: story, isLoading } = useGetStory(storyId || "");
   const updateNodeMutation = useUpdateNode();
-  const [nodeData, setNodeData] = useState<StoryNode | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
 
-  React.useEffect(() => {
-    if (story && nodeId) {
-      const node = story.nodes.find((n) => n.id === nodeId);
-      if (node) {
-        setNodeData(node);
-      }
-    }
-  }, [story, nodeId]);
+  const getNode = () => story?.nodes?.find((n) => n.id === nodeId) || null;
+  const { workingCopy: nodeData, setWorkingCopy: setNodeData } = useWorkingCopy(
+    getNode,
+    [storyId, nodeId]
+  );
+
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   if (isLoading || !nodeData) return <CircularProgress />;
 

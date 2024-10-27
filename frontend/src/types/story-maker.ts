@@ -1,3 +1,4 @@
+import React from 'react';
 import { z } from 'zod';
 
 // Helper schemas
@@ -41,7 +42,7 @@ const FlagSchema: z.ZodType = z.lazy(() =>
     ])
 );
 
-const ConditionSchema = z.object({
+export const ConditionSchema = z.object({
     flag: FlagSchema,
     type: z.enum(['equals', 'not_equals', 'greater_than', 'less_than', 'greater_than_or_equal_to', 'less_than_or_equal_to']),
     targetValue: z.union([z.string(), z.number(), z.boolean()]),
@@ -101,21 +102,61 @@ const PluginMediaSchema = BaseMediaSchema.extend({
     pluginId: z.string(),
 });
 
-const MediaSchema = z.union([ImageMediaSchema, VideoMediaSchema, AudioMediaSchema, PluginMediaSchema]);
+export const MediaSchema = z.union([ImageMediaSchema, VideoMediaSchema, AudioMediaSchema, PluginMediaSchema]);
 
-// Main schemas
-export const ConditionalPromptsSchema = z.object({
-    id: z.string(),
-    body: z.string(),
-    conditions: z.array(ConditionSchema),
-    media: z.array(MediaSchema),
-});
 
-export const ResponseSchema = z.object({
-    id: z.string(),
-    text: z.string(),
-    conditions: z.array(ConditionSchema),
-    media: z.array(MediaSchema),
+export type NodeEditorProps<T = unknown> = {
+    story: Story;
+    node: StoryNode;
+    pluginData: T;
+    setNode?: (node: StoryNode) => void;
+    setStory?: (story: Story) => void;
+}
+
+
+
+export type NodePlayerProps = {
+    story: Story;
+    node: StoryNode;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pluginData: Record<string, any>;
+}
+
+interface NodePluginEventParams {
+    node: StoryNode;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    pluginData: Record<string, any>;
+}
+
+interface NodePluginEventParams {
+    name: string;
+    from: string; // ID of the plugin that triggered the event, or `system`
+    data: Record<string, unknown>;
+}
+
+export interface NodePluginPlayer {
+    onNodeStart: (params: NodePluginEventParams) => void;
+    onNodeEnd: (params: NodePluginEventParams) => void;
+    onNodeEvent: (params: NodePluginEventParams | NodePluginEventParams) => void;
+    sendEvent: (name: string, data: Record<string, unknown>) => void;
+    PlayerVisual?: React.FC<NodePlayerProps>;
+    // Lots more to go here eventually...    
+}
+
+export interface NodePlugin<PluginDataType> {
+    id: string;
+    name: string;
+    description: string;
+    icon: React.ReactNode;
+    preferredEditorOrder: number;
+    maxInstances: number; // Can this plugin be added multiple times to a node?
+    Editor: React.FC<NodeEditorProps<PluginDataType>>;
+    player?: NodePluginPlayer;
+}
+
+export const PluginDataSchema = z.object({
+    pluginId: z.string(),
+    data: z.record(z.any()),
 });
 
 export const StoryNodeSchema = z.object({
@@ -124,10 +165,10 @@ export const StoryNodeSchema = z.object({
     storyId: z.string(),
     type: z.literal('conversation').default('conversation'),
     prompt: z.array(ConditionalPromptsSchema),
-    responses: z.array(ResponseSchema),
     media: z.array(MediaSchema),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
+    pluginData: z.array(PluginDataSchema)
 });
 
 export const StorySchema = z.object({
@@ -177,15 +218,7 @@ export interface ConditionalPrompts {
 }
 */
 
-export type Response = z.infer<typeof ResponseSchema>;
-/* Old definition:
-export interface Response {
-    id: string;
-    text: string;
-    conditions: Condition[];
-    media: Media[];
-}
-*/
+
 
 export type Flag = z.infer<typeof FlagSchema>;
 /* Old definition:
