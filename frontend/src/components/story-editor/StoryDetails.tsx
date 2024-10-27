@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -57,6 +57,7 @@ const StoryDetails: React.FC = () => {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editedTitle, setEditedTitle] = React.useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const { data: story, isLoading } = useGetStory(id || "");
   const updateStoryMutation = useUpdateStory();
@@ -86,15 +87,20 @@ const StoryDetails: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
-    deleteStoryMutation.mutate(
-      { id: story.id },
-      {
-        onSuccess: () => {
-          navigate("/stories");
-        },
-      }
-    );
-    setOpenDeleteDialog(false);
+    if (
+      deleteConfirmation.trim().toLowerCase() ===
+      story.title.trim().toLowerCase()
+    ) {
+      deleteStoryMutation.mutate(
+        { id: story.id },
+        {
+          onSuccess: () => {
+            navigate("/stories");
+          },
+        }
+      );
+      setOpenDeleteDialog(false);
+    }
   };
 
   return (
@@ -141,14 +147,33 @@ const StoryDetails: React.FC = () => {
           <ModalClose />
           <Typography level="h2">Confirm Deletion</Typography>
           <Divider />
-          <Typography>Are you sure you want to delete this story?</Typography>
+          <Typography>
+            Are you sure you want to delete this story? This action cannot be
+            undone.
+          </Typography>
+          <Typography sx={{ mt: 2 }}>
+            Please type <strong>{story.title}</strong> to confirm:
+          </Typography>
+          <input
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginTop: "8px",
+              marginBottom: "16px",
+            }}
+          />
           <Box
             sx={{ display: "flex", gap: 1, justifyContent: "flex-end", pt: 2 }}
           >
             <Button
               variant="plain"
               color="neutral"
-              onClick={() => setOpenDeleteDialog(false)}
+              onClick={() => {
+                setOpenDeleteDialog(false);
+                setDeleteConfirmation("");
+              }}
             >
               Cancel
             </Button>
@@ -156,6 +181,10 @@ const StoryDetails: React.FC = () => {
               variant="solid"
               color="danger"
               onClick={handleConfirmDelete}
+              disabled={
+                deleteConfirmation.trim().toLowerCase() !==
+                story.title.trim().toLowerCase()
+              }
             >
               Delete
             </Button>

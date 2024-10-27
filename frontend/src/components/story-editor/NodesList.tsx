@@ -20,12 +20,12 @@ const StyledSheet = styled(Sheet)`
 `;
 
 const NarrowColumn = styled.td`
-  width: 80px;
+  width: 90px;
   text-align: center;
 `;
 
 const NarrowHeader = styled.th`
-  width: 80px;
+  width: 90px;
   text-align: center;
 `;
 
@@ -34,7 +34,7 @@ const ActionsColumn = styled.td`
 `;
 
 const ActionsHeader = styled.th`
-  text-align: right;
+  text-align: right !important;
 `;
 
 const NodesList: React.FC = () => {
@@ -109,7 +109,6 @@ const NodesList: React.FC = () => {
         <Table hoverRow>
           <thead>
             <tr>
-              <NarrowHeader>Order</NarrowHeader>
               <th>Prompt</th>
               <NarrowHeader>Responses</NarrowHeader>
               <ActionsHeader>Actions</ActionsHeader>
@@ -118,7 +117,6 @@ const NodesList: React.FC = () => {
           <tbody>
             {sortedNodes.map((node: StoryNode) => (
               <tr key={node.id}>
-                <NarrowColumn>{node.nodeOrder}</NarrowColumn>
                 <td>{node.prompt[0]?.body || "No prompt"}</td>
                 <NarrowColumn>{node.responses.length}</NarrowColumn>
                 <ActionsColumn>
