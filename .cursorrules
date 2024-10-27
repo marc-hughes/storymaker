@@ -1,0 +1,15 @@
+Client code is in frontend/
+API lambda code is in lambda/
+AWS CDK stack to define the API is in
+
+Always
+Prefer small functions
+Don't apologize on mistakes
+Look in frontend/src/types/story-maker.ts for core data types.
+When writing comments, make sure to write "WHY" we're doing things, the what/how is less important.
+Prefer fat arrow syntax for functions
+Prefer small well named functions
+
+When Inside frontend/
+Use @tanstack/react-query for API requests
+Use @emotion/styled for component styling
