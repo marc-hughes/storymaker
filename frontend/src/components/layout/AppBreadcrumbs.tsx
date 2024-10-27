@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useMatch, PathMatch } from "react-router-dom";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import Link from "@mui/joy/Link";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -23,15 +23,36 @@ const StyledTypography = styled(Typography)`
 `;
 
 export const AppBreadcrumbs: React.FC = () => {
-  const { id: storyId, nodeId } = useParams<{ id: string; nodeId?: string }>();
-  const location = useLocation();
-  const { data: story } = useGetStory(storyId || "");
-
-  const truncateTitle = (title: string, maxLength: number) => {
-    return title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
-  };
-
-  const storyTitle = story ? truncateTitle(story.title, 32) : "Loading...";
+  const possibleBreadcumbs: {
+    route: PathMatch | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Breadcrumb: React.FC<any>;
+  }[] = [
+    {
+      route: useMatch("/stories/:storyId/*"),
+      Breadcrumb: StoryBreadcrumb,
+    },
+    {
+      route: useMatch("/stories/:storyId"),
+      Breadcrumb: StoryDetailscrumb,
+    },
+    {
+      route: useMatch("/stories/:storyId/map"),
+      Breadcrumb: NodeMapBreadcrumb,
+    },
+    {
+      route: useMatch("/stories/:storyId/nodes"),
+      Breadcrumb: NodeListBreadcrumb,
+    },
+    {
+      route: useMatch("/stories/:storyId/node/*"),
+      Breadcrumb: NodeListBreadcrumb,
+    },
+    {
+      route: useMatch("/stories/:storyId/node/:nodeId"),
+      Breadcrumb: NodeBreadcrumb,
+    },
+  ];
 
   return (
     <StyledBreadcrumbs
@@ -39,25 +60,50 @@ export const AppBreadcrumbs: React.FC = () => {
       aria-label="breadcrumbs"
       separator={<ChevronRightRoundedIcon />}
     >
-      <Link underline="none" color="neutral" href="/" aria-label="Home">
-        <HomeRoundedIcon />
-      </Link>
-
-      {storyId && (
-        <StyledLink
-          underline="hover"
-          color="neutral"
-          href={`/stories/${storyId}`}
-        >
-          {storyTitle}
-        </StyledLink>
-      )}
-
-      {location.pathname.includes("/node/") && nodeId ? (
-        <StyledTypography color="primary">Editing Node</StyledTypography>
-      ) : (
-        <StyledTypography color="primary">My Node</StyledTypography>
-      )}
+      <HomeBreadcrumb />
+      {possibleBreadcumbs
+        .filter(({ route }) => route)
+        .map(({ Breadcrumb, route }) => (
+          <Breadcrumb {...route?.params} />
+        ))}
     </StyledBreadcrumbs>
+  );
+};
+
+const StoryDetailscrumb: React.FC = () => {
+  return <StyledTypography color="primary">Story Details</StyledTypography>;
+};
+
+const NodeBreadcrumb: React.FC<{ nodeId: string }> = ({ nodeId }) => {
+  return <StyledTypography color="primary">Node {nodeId}</StyledTypography>;
+};
+
+const NodeMapBreadcrumb: React.FC<{ storyId: string }> = () => {
+  return <StyledTypography color="primary">Node Map</StyledTypography>;
+};
+
+const HomeBreadcrumb: React.FC = () => {
+  return (
+    <Link underline="none" color="neutral" href="/" aria-label="Home">
+      <HomeRoundedIcon />
+    </Link>
+  );
+};
+
+const truncateTitle = (title: string, maxLength: number) => {
+  return title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
+};
+
+const NodeListBreadcrumb: React.FC<{ storyId: string }> = ({ storyId }) => {
+  return <StyledLink href={`/stories/${storyId}/nodes`}>Node List</StyledLink>;
+};
+
+const StoryBreadcrumb: React.FC<{ storyId: string }> = ({ storyId }) => {
+  const { data: story } = useGetStory(storyId || "");
+  const title = story ? truncateTitle(story.title, 32) : "Loading...";
+  return (
+    <>
+      <StyledLink href={`/stories/${storyId}`}>{title}</StyledLink>
+    </>
   );
 };
