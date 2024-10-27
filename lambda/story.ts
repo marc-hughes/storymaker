@@ -6,6 +6,7 @@ import { getStory } from './data/get-story';
 import { updateStoryMetadata } from './data/update-story-metadata';
 import { Story, StoryNode } from '../frontend/src/types/story-maker';
 import { createNode } from './data/create-node';
+import { updateNode } from './data/update-node';
 
 // Add this function to create a response with CORS headers
 const createCorsResponse = (statusCode: number, body: any): APIGatewayProxyResult => {
@@ -56,6 +57,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                 return await handleDeleteStory(event, userId, pathParts[1]);
             case httpMethod === 'POST' && pathParts[0] === 'stories' && pathParts[2] === 'nodes' && pathParts.length === 3:
                 return await handleCreateNode(event, userId, pathParts[1]);
+            case httpMethod === 'PATCH' && event.resource === '/stories/{id}/nodes/{nodeId}':
+                const storyId = event.pathParameters?.id;
+                const nodeId = event.pathParameters?.nodeId;
+                if (!storyId || !nodeId) {
+                    return createCorsResponse(400, { message: "Story ID and Node ID are required" });
+                }
+                return handleUpdateNode(event, userId, storyId, nodeId);
 
             default:
                 console.log('Path not found in lambda', httpMethod, path);
@@ -151,5 +159,25 @@ const handleCreateNode = async (event: APIGatewayProxyEvent, userId: string, sto
     } catch (error) {
         console.error('Error creating node:', error);
         return createCorsResponse(500, { message: 'Failed to create node' });
+    }
+};
+
+const handleUpdateNode = async (
+    event: APIGatewayProxyEvent,
+    userId: string,
+    storyId: string,
+    nodeId: string
+): Promise<APIGatewayProxyResult> => {
+    try {
+        if (!event.body) {
+            return createCorsResponse(400, { message: "Content is required" });
+        }
+
+        const updates = JSON.parse(event.body) as StoryNode;
+        await updateNode(userId, storyId, nodeId, updates);
+        return createCorsResponse(200, { message: "Node updated successfully" });
+    } catch (error) {
+        console.error("Error updating node:", error);
+        return createCorsResponse(500, { message: "Failed to update node" });
     }
 };

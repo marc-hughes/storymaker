@@ -1,6 +1,7 @@
 import ConfirmSignup from "./components/Auth/ConfirmSignup";
 import Login from "./components/Auth/Login";
 import Signup from "./components/Auth/Signup";
+import NodeEditor from "./components/story-editor/NodeEditor";
 import NodeMap from "./components/story-editor/NodeMap";
 import NodesList from "./components/story-editor/NodesList";
 
@@ -36,6 +37,11 @@ export const routes: RouteConfig[] = [
       {
         path: "nodes",
         body: () => <NodesList />,
+        requiresAuth: true,
+      },
+      {
+        path: "node/:nodeId",
+        body: () => <NodeEditor />,
         requiresAuth: true,
       },
     ],

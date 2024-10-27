@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import Link from "@mui/joy/Link";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
@@ -23,8 +23,9 @@ const StyledTypography = styled(Typography)`
 `;
 
 export const AppBreadcrumbs: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: story } = useGetStory(id || "");
+  const { id: storyId, nodeId } = useParams<{ id: string; nodeId?: string }>();
+  const location = useLocation();
+  const { data: story } = useGetStory(storyId || "");
 
   const truncateTitle = (title: string, maxLength: number) => {
     return title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
@@ -42,13 +43,21 @@ export const AppBreadcrumbs: React.FC = () => {
         <HomeRoundedIcon />
       </Link>
 
-      {id && (
-        <StyledLink underline="hover" color="neutral" href={`/story/${id}`}>
+      {storyId && (
+        <StyledLink
+          underline="hover"
+          color="neutral"
+          href={`/stories/${storyId}`}
+        >
           {storyTitle}
         </StyledLink>
       )}
 
-      <StyledTypography color="primary">My Node</StyledTypography>
+      {location.pathname.includes("/node/") && nodeId ? (
+        <StyledTypography color="primary">Editing Node</StyledTypography>
+      ) : (
+        <StyledTypography color="primary">My Node</StyledTypography>
+      )}
     </StyledBreadcrumbs>
   );
 };
