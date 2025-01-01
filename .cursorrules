@@ -1,6 +1,6 @@
 Client code is in frontend/
 API lambda code is in lambda/
-AWS CDK stack to define the API is in
+AWS CDK stack to define the API is in lib/story-maker-stack.ts
 
 Always
 Prefer small functions
