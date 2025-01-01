@@ -32,6 +32,7 @@ export function deserializeStoryFromDynamoDB(item: Record<string, any>): Story {
     return {
         id: item.id,
         title: item.title,
+        activePlugins: item.activePlugins || [],
         nodes: [],
         deleted: item.deleted || false,
         createdAt: item.CreatedAt,

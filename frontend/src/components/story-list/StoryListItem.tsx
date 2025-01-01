@@ -77,7 +77,7 @@ const StoryListItem: React.FC<StoryListItemProps> = ({ story }) => {
         <ModalContent>
           <Typography level="h4">Confirm Delete</Typography>
           <Typography>
-            Are you sure you want to delete "{story.title}"?
+            Are you sure you want to delete &quot;{story.title}&quot;?
           </Typography>
           {deleteStoryMutation.isPending && (
             <Typography>

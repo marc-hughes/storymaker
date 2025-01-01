@@ -12,9 +12,9 @@ import { RouteConfig, routes } from "./routes";
 
 const queryClient = new QueryClient();
 
+// eslint-disable-next-line react/display-name
 const genRoute = (isAuthenticated: boolean) => (route: RouteConfig) => {
   const needsAuth = route.requiresAuth && !isAuthenticated;
-
   return (
     <Route
       key={route.path}

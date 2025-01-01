@@ -63,8 +63,8 @@ export const AppBreadcrumbs: React.FC = () => {
       <HomeBreadcrumb />
       {possibleBreadcumbs
         .filter(({ route }) => route)
-        .map(({ Breadcrumb, route }) => (
-          <Breadcrumb {...route?.params} />
+        .map(({ Breadcrumb, route }, idx) => (
+          <Breadcrumb {...route?.params} key={idx} />
         ))}
     </StyledBreadcrumbs>
   );

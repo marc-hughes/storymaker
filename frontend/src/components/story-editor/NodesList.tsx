@@ -59,10 +59,10 @@ const NodesList: React.FC = () => {
       const newNode = await createNodeMutation.mutateAsync({
         storyId,
         node: {
+          label: "New Node",
           nodeOrder: (story.nodes.length + 1) * 10,
           type: "conversation",
-          prompt: [],
-          responses: [],
+          pluginData: [],
           media: [],
         },
       });
@@ -88,7 +88,7 @@ const NodesList: React.FC = () => {
   return (
     <div>
       <Typography level="h2" sx={{ mb: 2 }}>
-        Nodes for "{story.title}"
+        Nodes for &quot;{story.title}&quot;
         {isFetching && (
           <CircularProgress
             sx={{ position: "relative", left: 10, top: 4 }}
@@ -117,8 +117,8 @@ const NodesList: React.FC = () => {
           <tbody>
             {sortedNodes.map((node: StoryNode) => (
               <tr key={node.id}>
-                <td>{node.prompt[0]?.body || "No prompt"}</td>
-                <NarrowColumn>{node.responses.length}</NarrowColumn>
+                <td>{node.label || "No Label"}</td>
+                <NarrowColumn></NarrowColumn>
                 <ActionsColumn>
                   <Button
                     size="sm"

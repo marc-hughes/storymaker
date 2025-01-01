@@ -1,5 +1,5 @@
+/* eslint-disable react/prop-types */
 import { Box, Table, Typography } from "@mui/joy";
-import { Story } from "../../types/story-maker";
 import { NavLink } from "react-router-dom";
 import { styled } from "@mui/joy/styles";
 
@@ -10,7 +10,16 @@ const StyledLink = styled(NavLink)(() => ({
   },
 }));
 
-export const StoryTable: React.FC<{ stories: Story[] }> = ({ stories }) => {
+interface StorySummary {
+  id: string;
+  title: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export const StoryTable: React.FC<{ stories: StorySummary[] }> = ({
+  stories,
+}) => {
   return (
     <Table
       aria-labelledby="tableTitle"
@@ -78,7 +87,7 @@ export const StoryTable: React.FC<{ stories: Story[] }> = ({ stories }) => {
         </tr>
       </thead>
       <tbody>
-        {stories.map((row: Story) => (
+        {stories.map((row: StorySummary) => (
           <tr key={row.id}>
             <td>
               <Typography level="body-sm">

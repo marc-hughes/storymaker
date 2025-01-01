@@ -7,6 +7,7 @@ import { updateStoryMetadata } from './data/update-story-metadata';
 import { Story, StoryNode } from '../frontend/src/types/story-maker';
 import { createNode } from './data/create-node';
 import { updateNode } from './data/update-node';
+import { ZodError } from 'zod';
 
 // Add this function to create a response with CORS headers
 const createCorsResponse = (statusCode: number, body: any): APIGatewayProxyResult => {
@@ -157,6 +158,10 @@ const handleCreateNode = async (event: APIGatewayProxyEvent, userId: string, sto
         const newNode = await createNode(userId, storyId, body);
         return createCorsResponse(201, newNode);
     } catch (error) {
+        // Check if the error is a ZodError
+        if (error instanceof ZodError) {
+            return createCorsResponse(400, { message: `Validation failed: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}` });
+        }
         console.error('Error creating node:', error);
         return createCorsResponse(500, { message: 'Failed to create node' });
     }

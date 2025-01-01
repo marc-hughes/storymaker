@@ -11,7 +11,6 @@ export const useWorkingCopy = <T>(
     useEffect(() => {
         setWorkingCopy(
             structuredClone(retriever()));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, dependencies);
 
     return { workingCopy, setWorkingCopy };

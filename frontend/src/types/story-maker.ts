@@ -1,5 +1,6 @@
 import React from 'react';
 import { z } from 'zod';
+import { DefaultPlugins } from '../plugins/plugin-list';
 
 // Helper schemas
 const FlagBaseSchema = z.object({
@@ -161,10 +162,10 @@ export const PluginDataSchema = z.object({
 
 export const StoryNodeSchema = z.object({
     id: z.string(),
+    label: z.string(),
     nodeOrder: z.number(),
     storyId: z.string(),
     type: z.literal('conversation').default('conversation'),
-    prompt: z.array(ConditionalPromptsSchema),
     media: z.array(MediaSchema),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -172,10 +173,13 @@ export const StoryNodeSchema = z.object({
 });
 
 export const StorySchema = z.object({
-    id: z.string(),
+    id: z.string().optional(),
     title: z.string(),
-    nodes: z.array(StoryNodeSchema),
-    deleted: z.boolean(),
+    nodes: z.array(StoryNodeSchema).default([]),
+    activePlugins: z.array(z.string()).default(
+        DefaultPlugins.map(plugin => plugin.id)
+    ),
+    deleted: z.boolean().default(false),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
 });
@@ -208,15 +212,7 @@ export interface StoryNode {
 }
 */
 
-export type ConditionalPrompts = z.infer<typeof ConditionalPromptsSchema>;
-/* Old definition:
-export interface ConditionalPrompts {
-    id: string;
-    body: string;
-    conditions: Condition[];
-    media: Media[];
-}
-*/
+
 
 
 

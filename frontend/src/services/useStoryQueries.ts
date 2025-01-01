@@ -114,7 +114,7 @@ export const useDeleteStory = () => {
 export const useCreateNode = () => {
     const queryClient = useQueryClient();
     const client = useApiClient();
-    return useMutation<StoryNode, Error, { storyId: string; node: Partial<StoryNode> }>({
+    return useMutation<StoryNode, Error, { storyId: string; node: Omit<StoryNode, 'id' | 'storyId'> }>({
         mutationFn: ({ storyId, node }) => api.createNode(client, storyId, node),
         onSuccess: (_data, { storyId }) => {
             queryClient.invalidateQueries({ queryKey: ['story', storyId] });

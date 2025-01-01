@@ -15,6 +15,7 @@ import {
 
 import { useCreateStory, useGetStories } from "../../services/useStoryQueries";
 import { StoryTable } from "./StoryTable";
+import { StorySchema } from "../../types/story-maker";
 
 const StoryList: React.FC = () => {
   //const [stories, setStories] = useState<Story[]>([]);
@@ -24,8 +25,8 @@ const StoryList: React.FC = () => {
   const { isPending, error, data: stories } = useGetStories();
   const createStoryMutation = useCreateStory();
   const handleCreate = async () => {
-    await createStoryMutation.mutateAsync({ title });
-    //setStories([...stories, newStory]);
+    const newStory = StorySchema.parse({ title });
+    await createStoryMutation.mutateAsync(newStory);
     setOpen(false);
     setTitle("");
   };

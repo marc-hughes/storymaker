@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AdbIcon from "@mui/icons-material/Adb";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -58,6 +59,7 @@ const StoryDetails: React.FC = () => {
   const [editedTitle, setEditedTitle] = React.useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = React.useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDebugPanelOpen, setIsDebugPanelOpen] = useState(false); // New state for debug panel
 
   const { data: story, isLoading } = useGetStory(id || "");
   const updateStoryMutation = useUpdateStory();
@@ -106,6 +108,15 @@ const StoryDetails: React.FC = () => {
   return (
     <StoryDetailsContainer>
       <DeleteButtonContainer>
+        <Tooltip title="Debug Info" arrow>
+          <IconButton
+            size="sm"
+            variant="soft"
+            onClick={() => setIsDebugPanelOpen((prev) => !prev)}
+          >
+            <AdbIcon />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Delete Story" arrow>
           <IconButton
             size="sm"
@@ -124,24 +135,37 @@ const StoryDetails: React.FC = () => {
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
             />
-            <Button
-              onClick={handleSaveClick}
-              startDecorator={<EditIcon />}
-              size="sm"
-            >
+            <Button onClick={handleSaveClick} size="sm">
               Save
             </Button>
           </>
         ) : (
           <>
             <Typography level="h4">{story.title}</Typography>
-            <IconButton onClick={handleEditClick}>
+            <IconButton onClick={handleEditClick} size="sm">
               <EditIcon />
             </IconButton>
           </>
         )}
       </TitleContainer>
       <Typography>Number of nodes: {story.nodes.length}</Typography>
+
+      {/* Debug Panel */}
+      {isDebugPanelOpen && (
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            border: "1px solid",
+            borderColor: "neutral.outlinedBorder",
+            borderRadius: "sm",
+          }}
+        >
+          <Typography>Debug Info:</Typography>
+          <pre>{JSON.stringify(story, null, 2)}</pre>
+        </Box>
+      )}
+
       <Modal open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <ModalDialog>
           <ModalClose />
