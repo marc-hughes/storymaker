@@ -9,8 +9,8 @@ export const ConditionalPromptsSchema = z.object({
 });
 
 export const PromptPluginDataSchema = z.object({
-    prompts: z.array(ConditionalPromptsSchema),
-});
+    prompts: z.array(ConditionalPromptsSchema).default([]),
+}).default({}) ;
 
 export type ConditionalPrompt = z.infer<typeof ConditionalPromptsSchema>;
 

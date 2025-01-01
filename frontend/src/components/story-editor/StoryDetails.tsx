@@ -76,6 +76,7 @@ const StoryDetails: React.FC = () => {
   };
 
   const handleSaveClick = () => {
+    if (!story.id) return;
     updateStoryMutation.mutate(
       { id: story.id, title: editedTitle },
       {
@@ -91,10 +92,12 @@ const StoryDetails: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
+    
     if (
       deleteConfirmation.trim().toLowerCase() ===
       story.title.trim().toLowerCase()
     ) {
+      if (!story.id) return;
       deleteStoryMutation.mutate(
         { id: story.id },
         {

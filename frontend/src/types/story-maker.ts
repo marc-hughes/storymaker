@@ -1,6 +1,5 @@
 import React from 'react';
 import { z } from 'zod';
-import { DefaultPlugins } from '../plugins/plugin-list';
 
 // Helper schemas
 const FlagBaseSchema = z.object({
@@ -110,6 +109,7 @@ export type NodeEditorProps<T = unknown> = {
     story: Story;
     node: StoryNode;
     pluginData: T;
+    setPluginData?: (data:unknown) => void;
     setNode?: (node: StoryNode) => void;
     setStory?: (story: Story) => void;
 }
@@ -144,6 +144,8 @@ export interface NodePluginPlayer {
     // Lots more to go here eventually...    
 }
 
+export type NodeEditorContainers = 'default' | 'right-sidebar' | 'bottom-gutter';
+
 export interface NodePlugin<PluginDataType> {
     id: string;
     name: string;
@@ -152,6 +154,7 @@ export interface NodePlugin<PluginDataType> {
     preferredEditorOrder: number;
     maxInstances: number; // Can this plugin be added multiple times to a node?
     Editor: React.FC<NodeEditorProps<PluginDataType>>;
+    editorContainer: NodeEditorContainers;
     player?: NodePluginPlayer;
 }
 
@@ -177,7 +180,7 @@ export const StorySchema = z.object({
     title: z.string(),
     nodes: z.array(StoryNodeSchema).default([]),
     activePlugins: z.array(z.string()).default(
-        DefaultPlugins.map(plugin => plugin.id)
+        ["node-prompt", "node-responses"]
     ),
     deleted: z.boolean().default(false),
     createdAt: z.string().optional(),

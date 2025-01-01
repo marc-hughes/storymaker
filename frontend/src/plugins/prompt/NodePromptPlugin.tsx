@@ -10,5 +10,6 @@ export const NodePromptPlugin: NodePlugin<PromptPluginData> = {
   icon: <QuestionAnswerIcon />,
   preferredEditorOrder: 1,
   maxInstances: 1,
+  editorContainer: 'default',
   Editor: NodePromptEditor,
 };
