@@ -20,6 +20,8 @@ import {
   useUpdateStory,
   useDeleteStory,
 } from "../../services/useStoryQueries";
+import { ActivePluginsList } from './ActivePluginsList';
+import { AvailablePlugins } from '../../plugins/plugin-list';
 
 const StoryDetailsContainer = styled("div")(({ theme }) => ({
   padding: theme.spacing(2),
@@ -215,6 +217,8 @@ const StoryDetails: React.FC = () => {
           </Box>
         </ModalDialog>
       </Modal>
+
+      <ActivePluginsList plugins={AvailablePlugins} />
     </StoryDetailsContainer>
   );
 };

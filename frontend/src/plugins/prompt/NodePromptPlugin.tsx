@@ -6,7 +6,7 @@ import { PromptPluginData } from "./prompt-types";
 export const NodePromptPlugin: NodePlugin<PromptPluginData> = {
   id: "node-prompt",
   name: "Prompt",
-  description: "Add a prompt to a node",
+  description: "Add a prompt to a node (Default Story-Maker Plugin)",
   icon: <QuestionAnswerIcon />,
   preferredEditorOrder: 1,
   maxInstances: 1,
