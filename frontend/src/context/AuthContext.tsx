@@ -5,6 +5,8 @@ import {
   InitiateAuthCommand,
   AuthenticationResultType,
   ConfirmSignUpCommand,
+  ForgotPasswordCommand,
+  ConfirmForgotPasswordCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 const client = new CognitoIdentityProviderClient({
@@ -20,6 +22,8 @@ interface AuthContextProps {
   logout: () => void;
   getAccessToken: () => string | null;
   refreshToken: () => Promise<User | null>;
+  forgotPassword: (email: string) => Promise<void>;
+  confirmForgotPassword: (email: string, code: string, newPassword: string) => Promise<void>;
 }
 
 interface User {
@@ -39,6 +43,8 @@ export const AuthContext = createContext<AuthContextProps>({
   logout: () => {},
   getAccessToken: () => null,
   refreshToken: async () => null,
+  forgotPassword: async () => {},
+  confirmForgotPassword: async () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -148,6 +154,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    const command = new ForgotPasswordCommand({
+      ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
+      Username: email,
+    });
+
+    await client.send(command);
+  };
+
+  const confirmForgotPassword = async (
+    email: string,
+    code: string,
+    newPassword: string
+  ) => {
+    const command = new ConfirmForgotPasswordCommand({
+      ClientId: import.meta.env.VITE_COGNITO_CLIENT_ID,
+      Username: email,
+      ConfirmationCode: code,
+      Password: newPassword,
+    });
+
+    await client.send(command);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -159,6 +189,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         confirmSignup,
         getAccessToken,
         refreshToken,
+        forgotPassword,
+        confirmForgotPassword,
       }}
     >
       {children}

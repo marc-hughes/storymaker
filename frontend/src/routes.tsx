@@ -8,6 +8,8 @@ import NodesList from "./components/story-editor/NodesList";
 import StoryDetails from "./components/story-editor/StoryDetails";
 import StoryEditor from "./components/story-editor/StoryEditor";
 import StoryList from "./components/story-list/StoryList";
+import ForgotPassword from "./components/Auth/ForgotPassword";
+import ResetPassword from "./components/Auth/ResetPassword";
 
 type ReactFunc = () => React.ReactNode;
 
@@ -59,6 +61,16 @@ export const routes: RouteConfig[] = [
   {
     path: "/confirm-signup",
     body: () => <ConfirmSignup />,
+    requiresAuth: false,
+  },
+  {
+    path: "/forgot-password",
+    body: () => <ForgotPassword />,
+    requiresAuth: false,
+  },
+  {
+    path: "/reset-password",
+    body: () => <ResetPassword />,
     requiresAuth: false,
   },
   {

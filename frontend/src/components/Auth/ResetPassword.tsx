@@ -8,22 +8,24 @@ import {
   FormLabel,
 } from "@mui/joy";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { isError } from "./is-error";
 
-const Login: React.FC = () => {
-  const { login } = useAuth();
+const ResetPassword: React.FC = () => {
+  const { confirmForgotPassword } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const email = searchParams.get("email") || "";
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate("/");
+      await confirmForgotPassword(email, code, newPassword);
+      navigate("/login");
     } catch (err) {
       if (isError(err)) {
         setError(err.message);
@@ -36,7 +38,7 @@ const Login: React.FC = () => {
   return (
     <Box
       component="form"
-      onSubmit={handleLogin}
+      onSubmit={handleSubmit}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -46,32 +48,29 @@ const Login: React.FC = () => {
         mt: 5,
       }}
     >
-      <Typography level="h4">Login</Typography>
+      <Typography level="h4">Reset Password</Typography>
       {error && <Typography color="danger">{error}</Typography>}
       <FormControl required>
-        <FormLabel>Email</FormLabel>
+        <FormLabel>Reset Code</FormLabel>
         <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
         />
       </FormControl>
       <FormControl required>
-        <FormLabel>Password</FormLabel>
+        <FormLabel>New Password</FormLabel>
         <Input
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
         />
       </FormControl>
       <Button type="submit" fullWidth>
-        Login
+        Reset Password
       </Button>
-      <Link to="/forgot-password" style={{ textAlign: 'center' }}>
-        <Typography level="body-sm">Forgot Password?</Typography>
-      </Link>
     </Box>
   );
 };
 
-export default Login;
+export default ResetPassword; 

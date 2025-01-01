@@ -1,38 +1,130 @@
 {
-  "name": "story-maker",
-  "version": "0.1.0",
-  "bin": {
-    "story-maker": "bin/story-maker.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "cdk": "cdk"
-  },
-  "devDependencies": {
-    "@types/aws-lambda": "^8.10.145",
-    "@types/jest": "^29.5.12",
-    "@types/node": "22.5.4",
-    "@types/uuid": "^10.0.0",
-    "aws-cdk": "2.159.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
-    "typescript": "~5.6.2"
-  },
-  "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.658.1",
-    "@aws-sdk/lib-dynamodb": "^3.658.1",
-    "aws-cdk-lib": "2.159.1",
-    "aws-lambda": "^1.0.7",
-    "constructs": "^10.0.0",
-    "dotenv": "^16.4.5",
-    "esbuild": "^0.24.0",
-    "eslint": "^9.13.0",
-    "source-map-support": "^0.5.21",
-    "uuid": "^10.0.0",
-    "zod": "^3.23.8"
-  }
+	"name": "story-maker",
+	"version": "0.1.0",
+	"bin": {
+		"story-maker": "bin/story-maker.js"
+	},
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc -w",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"cdk": "cdk"
+	},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.145",
+		"@types/jest": "^29.5.12",
+		"@types/node": "22.5.4",
+		"@types/uuid": "^10.0.0",
+		"aws-cdk": "2.159.1",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.2.5",
+		"ts-node": "^10.9.2",
+		"typescript": "~5.6.2"
+	},
+	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.658.1",
+		"@aws-sdk/lib-dynamodb": "^3.658.1",
+		"aws-cdk-lib": "2.159.1",
+		"aws-lambda": "^1.0.7",
+		"constructs": "^10.0.0",
+		"dotenv": "^16.4.5",
+		"esbuild": "^0.24.0",
+		"eslint": "^9.13.0",
+		"source-map-support": "^0.5.21",
+		"uuid": "^10.0.0",
+		"zod": "^3.23.8"
+	},
+	"Transform": "AWS::Serverless-2016-10-31",
+	"Resources": {
+		"Api": {
+			"Type": "AWS::Serverless::Api",
+			"Properties": {
+				"Name": {
+					"Fn::Sub": [
+						"${ResourceName} From Stack ${AWS::StackName}",
+						{
+							"ResourceName": "Api"
+						}
+					]
+				},
+				"StageName": "Prod",
+				"DefinitionBody": {
+					"openapi": "3.0",
+					"info": {},
+					"paths": {
+						"/": {
+							"get": {
+								"x-amazon-apigateway-integration": {
+									"httpMethod": "POST",
+									"type": "aws_proxy",
+									"uri": {
+										"Fn::Sub": "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Function.Arn}/invocations"
+									}
+								},
+								"responses": {}
+							}
+						}
+					}
+				},
+				"EndpointConfiguration": "REGIONAL",
+				"TracingEnabled": true
+			}
+		},
+		"UserPool": {
+			"Type": "AWS::Cognito::UserPool",
+			"Properties": {
+				"AdminCreateUserConfig": {
+					"AllowAdminCreateUserOnly": false
+				},
+				"AliasAttributes": [
+					"email",
+					"preferred_username"
+				],
+				"UserPoolName": {
+					"Fn::Sub": "${AWS::StackName}-UserPool"
+				}
+			}
+		},
+		"Function": {
+			"Type": "AWS::Serverless::Function",
+			"Properties": {
+				"Description": {
+					"Fn::Sub": [
+						"Stack ${AWS::StackName} Function ${ResourceName}",
+						{
+							"ResourceName": "Function"
+						}
+					]
+				},
+				"CodeUri": "src/Function",
+				"Handler": "index.handler",
+				"Runtime": "nodejs20.x",
+				"MemorySize": 3008,
+				"Timeout": 30,
+				"Tracing": "Active",
+				"Events": {
+					"ApiGET": {
+						"Type": "Api",
+						"Properties": {
+							"Path": "/",
+							"Method": "GET",
+							"RestApiId": {
+								"Ref": "Api"
+							}
+						}
+					}
+				}
+			}
+		},
+		"FunctionLogGroup": {
+			"Type": "AWS::Logs::LogGroup",
+			"DeletionPolicy": "Retain",
+			"Properties": {
+				"LogGroupName": {
+					"Fn::Sub": "/aws/lambda/${Function}"
+				}
+			}
+		}
+	}
 }

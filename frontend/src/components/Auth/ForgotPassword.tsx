@@ -8,22 +8,20 @@ import {
   FormLabel,
 } from "@mui/joy";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { isError } from "./is-error";
 
-const Login: React.FC = () => {
-  const { login } = useAuth();
+const ForgotPassword: React.FC = () => {
+  const { forgotPassword } = useAuth();
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate("/");
+      await forgotPassword(email);
+      navigate(`/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err) {
       if (isError(err)) {
         setError(err.message);
@@ -36,7 +34,7 @@ const Login: React.FC = () => {
   return (
     <Box
       component="form"
-      onSubmit={handleLogin}
+      onSubmit={handleSubmit}
       sx={{
         display: "flex",
         flexDirection: "column",
@@ -46,7 +44,7 @@ const Login: React.FC = () => {
         mt: 5,
       }}
     >
-      <Typography level="h4">Login</Typography>
+      <Typography level="h4">Forgot Password</Typography>
       {error && <Typography color="danger">{error}</Typography>}
       <FormControl required>
         <FormLabel>Email</FormLabel>
@@ -56,22 +54,11 @@ const Login: React.FC = () => {
           onChange={(e) => setEmail(e.target.value)}
         />
       </FormControl>
-      <FormControl required>
-        <FormLabel>Password</FormLabel>
-        <Input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </FormControl>
       <Button type="submit" fullWidth>
-        Login
+        Send Reset Code
       </Button>
-      <Link to="/forgot-password" style={{ textAlign: 'center' }}>
-        <Typography level="body-sm">Forgot Password?</Typography>
-      </Link>
     </Box>
   );
 };
 
-export default Login;
+export default ForgotPassword; 
